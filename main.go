@@ -62,7 +62,7 @@ func main() {
 		os.Exit(1)
 	}
 	fps := s3.GetObject(sess, SRC_BUCKET, resp)
-	for fp := range fps {
+	for _, fp := range fps {
 		s3.ReadGzip(fp)
 	}
 }
