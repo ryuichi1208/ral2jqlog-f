@@ -67,4 +67,8 @@ func main() {
 	for _, fp := range fps {
 		s3.ReadGzip(fp)
 	}
+
+	for _, j := range s3.GetJsonFileList(tmpDir) {
+		fmt.Println(j)
+	}
 }

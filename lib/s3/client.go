@@ -59,3 +59,23 @@ func GetObject(sess *session.Session, src string, tmpDir string, objs *s3.ListOb
 
 	return fps
 }
+
+func GetJsonFileList(dir string) []string {
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		panic(err)
+	}
+
+	var paths, jsons []string
+	for _, file := range files {
+		if file.IsDir() {
+			paths = append(paths, GetJsonFileList(filepath.Join(dir, file.Name()))...)
+			continue
+		}
+		paths = append(paths, filepath.Join(dir, file.Name()))
+		if filepath.Ext(filepath.Join(dir, file.Name())) == ".json" {
+			jsons = append(jsons, filepath.Join(dir, file.Name()))
+		}
+	}
+	return jsons
+}
