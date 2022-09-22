@@ -51,6 +51,11 @@ func init() {
 	} else {
 		DATE = opts.DATE
 	}
+
+	if os.Getenv("AWS_REGION") == "" {
+		fmt.Println("SET the environment variable AWS_REGION")
+		os.Exit(1)
+	}
 }
 
 func main() {
