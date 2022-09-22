@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -64,6 +65,14 @@ func main() {
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
+	ctx := context.Background()
+	var cancelFn func()
+	ctx, cancelFn = context.WithTimeout(ctx, 60*time.Second)
+
+	if cancelFn != nil {
+		defer cancelFn()
+	}
+
 	fmt.Println(DATE)
 	resp, err := s3.GetObjectsList(sess, DATE, SRC_BUCKET)
 	if err != nil {
@@ -81,7 +90,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fps := s3.GetObject(sess, SRC_BUCKET, tmpDir, resp)
+	fps := s3.GetObject(sess, SRC_BUCKET, tmpDir, resp, ctx)
 	for _, fp := range fps {
 		s3.ReadGzip(fp)
 	}

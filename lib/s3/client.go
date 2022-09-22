@@ -1,6 +1,7 @@
 package s3
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -45,7 +46,7 @@ func RmTmpDir(dir string) error {
 	return nil
 }
 
-func GetObject(sess *session.Session, src string, tmpDir string, objs *s3.ListObjectsV2Output) []*os.File {
+func GetObject(sess *session.Session, src string, tmpDir string, objs *s3.ListObjectsV2Output, ctx context.Context) []*os.File {
 	var fps []*os.File
 	downloader := s3manager.NewDownloader(sess)
 	for _, item := range objs.Contents {
@@ -55,7 +56,7 @@ func GetObject(sess *session.Session, src string, tmpDir string, objs *s3.ListOb
 			fmt.Println(err)
 			return fps
 		}
-		_, err = downloader.Download(fp, &s3.GetObjectInput{
+		_, err = downloader.DownloadWithContext(ctx, fp, &s3.GetObjectInput{
 			Bucket: aws.String(src),
 			Key:    aws.String(*item.Key),
 		})
