@@ -3,11 +3,13 @@ package s3
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 func GetObjectsList(sess *session.Session, date, src string) (*s3.ListObjectsV2Output, error) {
@@ -34,19 +36,28 @@ func mkTmpDir(prefix string) (string, error) {
 }
 
 func GetObject(sess *session.Session, src string, objs *s3.ListObjectsV2Output) {
+	downloader := s3manager.NewDownloader(sess)
 	tmpDir, err := mkTmpDir("audit_")
 	if err != nil {
 		fmt.Println(tmpDir)
 		return
 	}
 	for _, item := range objs.Contents {
-		filename := fmt.Sprintf("%s/%s.json", tmpDir, filepath.Base(*item.Key))
+		filename := fmt.Sprintf("%s/%s", tmpDir, filepath.Base(*item.Key))
 		fmt.Println(filename)
-		// fp, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0600)
-		// if err != nil {
-		// 	fmt.Println(err)
-		// 	return
-		// }
-		// defer fp.Close()
+		fp, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0600)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer fp.Close()
+		n, err := downloader.Download(fp, &s3.GetObjectInput{
+			Bucket: aws.String(src),
+			Key:    aws.String(*item.Key),
+		})
+		if err != nil {
+			return
+		}
+		fmt.Println(n)
 	}
 }
