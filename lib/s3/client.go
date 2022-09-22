@@ -59,5 +59,6 @@ func GetObject(sess *session.Session, src string, objs *s3.ListObjectsV2Output) 
 			return
 		}
 		fmt.Println(n)
+		readGzip(filename)
 	}
 }
