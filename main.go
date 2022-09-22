@@ -68,7 +68,5 @@ func main() {
 		s3.ReadGzip(fp)
 	}
 
-	for _, j := range s3.GetJsonFileList(tmpDir) {
-		fmt.Println(j)
-	}
+	s3.PutObject(sess, DST_BUCKET, s3.GetJsonFileList(tmpDir))
 }

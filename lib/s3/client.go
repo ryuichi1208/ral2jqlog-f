@@ -3,8 +3,10 @@ package s3
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -78,4 +80,45 @@ func GetJsonFileList(dir string) []string {
 		}
 	}
 	return jsons
+}
+
+func makeHIVEFormat(filename string) string {
+	begin, end := 0, 0
+	for i := len(filename) - 1; i >= 0; i-- {
+		if filename[i] == '/' {
+			begin = i + 1
+			break
+		}
+		if filename[i] == '.' {
+			end = i
+		}
+	}
+	arr := strings.Split(filename[begin:end], "-")
+	hive := fmt.Sprintf("dt=%s-%s-%s-%s/%s", arr[7], arr[8], arr[9], arr[10], filename[begin:])
+	return hive
+}
+
+func PutObject(sess *session.Session, dst string, files []string) error {
+	uploader := s3manager.NewUploader(sess)
+
+	for _, f := range files {
+		key := makeHIVEFormat(f)
+		fmt.Println(key)
+		file, err := os.Open(f)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+		_, err = uploader.Upload(&s3manager.UploadInput{
+			Bucket: aws.String(dst),
+			Key:    aws.String(key),
+			Body:   file,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("done")
+	}
+
+	return nil
 }
