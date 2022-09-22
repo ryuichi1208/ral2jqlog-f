@@ -35,12 +35,13 @@ func mkTmpDir(prefix string) (string, error) {
 	return dir, nil
 }
 
-func GetObject(sess *session.Session, src string, objs *s3.ListObjectsV2Output) {
+func GetObject(sess *session.Session, src string, objs *s3.ListObjectsV2Output) []*os.File {
+	var fps []*os.File
 	downloader := s3manager.NewDownloader(sess)
 	tmpDir, err := mkTmpDir("audit_")
 	if err != nil {
 		fmt.Println(tmpDir)
-		return
+		return fps
 	}
 	for _, item := range objs.Contents {
 		filename := fmt.Sprintf("%s/%s", tmpDir, filepath.Base(*item.Key))
@@ -48,17 +49,18 @@ func GetObject(sess *session.Session, src string, objs *s3.ListObjectsV2Output) 
 		fp, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0600)
 		if err != nil {
 			fmt.Println(err)
-			return
+			return fps
 		}
-		defer fp.Close()
 		n, err := downloader.Download(fp, &s3.GetObjectInput{
 			Bucket: aws.String(src),
 			Key:    aws.String(*item.Key),
 		})
+		fps = append(fps, fp)
 		if err != nil {
-			return
+			return fps
 		}
 		fmt.Println(n)
-		readGzip(filename)
 	}
+
+	return fps
 }

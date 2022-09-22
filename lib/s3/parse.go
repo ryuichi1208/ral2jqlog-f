@@ -79,14 +79,8 @@ func auditLog2Json(jsonString string) error {
 	return nil
 }
 
-func readGzip(filename string) error {
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	br := bufio.NewReader(f)
+func ReadGzip(fp *os.File) error {
+	br := bufio.NewReader(fp)
 	r, err := gzip.NewReader(br)
 	if err != nil {
 		return err
@@ -103,6 +97,5 @@ func readGzip(filename string) error {
 			break
 		}
 	}
-
 	return err
 }
