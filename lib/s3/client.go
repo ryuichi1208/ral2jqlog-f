@@ -37,6 +37,14 @@ func MkTmpDir(prefix string) (string, error) {
 	return dir, nil
 }
 
+func RmTmpDir(dir string) error {
+	err := os.RemoveAll(dir)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetObject(sess *session.Session, src string, tmpDir string, objs *s3.ListObjectsV2Output) []*os.File {
 	var fps []*os.File
 	downloader := s3manager.NewDownloader(sess)

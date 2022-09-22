@@ -54,15 +54,20 @@ func main() {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
+
 	resp, err := s3.GetObjectsList(sess, DATE, SRC_BUCKET)
 	if err != nil {
 		os.Exit(1)
 	}
+
 	tmpDir, err := s3.MkTmpDir("audit_")
+	defer s3.RmTmpDir(tmpDir)
+
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
 	fps := s3.GetObject(sess, SRC_BUCKET, tmpDir, resp)
 	for _, fp := range fps {
 		s3.ReadGzip(fp)
