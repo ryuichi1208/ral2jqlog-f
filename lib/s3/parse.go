@@ -87,7 +87,7 @@ func ReadGzip(fp *os.File) error {
 	}
 	defer r.Close()
 
-	f, err := os.OpenFile(fmt.Sprintf("%s.json", fp.Name()), os.O_CREATE, 0600)
+	f, err := os.OpenFile(fmt.Sprintf("%s.json", fp.Name()), os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		return nil
 	}

@@ -48,12 +48,9 @@ func init() {
 		t := time.Now()
 		DATE = t.Format(layout2)
 	}
-
 }
 
 func main() {
-	fmt.Println(DATE, SRC_BUCKET, DST_BUCKET)
-
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
@@ -61,7 +58,12 @@ func main() {
 	if err != nil {
 		os.Exit(1)
 	}
-	fps := s3.GetObject(sess, SRC_BUCKET, resp)
+	tmpDir, err := s3.MkTmpDir("audit_")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	fps := s3.GetObject(sess, SRC_BUCKET, tmpDir, resp)
 	for _, fp := range fps {
 		s3.ReadGzip(fp)
 	}

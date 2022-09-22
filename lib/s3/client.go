@@ -27,7 +27,7 @@ func GetObjectsList(sess *session.Session, date, src string) (*s3.ListObjectsV2O
 	return resp, nil
 }
 
-func mkTmpDir(prefix string) (string, error) {
+func MkTmpDir(prefix string) (string, error) {
 	dir, err := ioutil.TempDir("", prefix)
 	if err != nil {
 		return "", err
@@ -35,14 +35,9 @@ func mkTmpDir(prefix string) (string, error) {
 	return dir, nil
 }
 
-func GetObject(sess *session.Session, src string, objs *s3.ListObjectsV2Output) []*os.File {
+func GetObject(sess *session.Session, src string, tmpDir string, objs *s3.ListObjectsV2Output) []*os.File {
 	var fps []*os.File
 	downloader := s3manager.NewDownloader(sess)
-	tmpDir, err := mkTmpDir("audit_")
-	if err != nil {
-		fmt.Println(tmpDir)
-		return fps
-	}
 	for _, item := range objs.Contents {
 		filename := fmt.Sprintf("%s/%s", tmpDir, filepath.Base(*item.Key))
 		fmt.Println(filename)
