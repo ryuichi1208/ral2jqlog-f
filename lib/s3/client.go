@@ -50,13 +50,12 @@ func GetObject(sess *session.Session, src string, tmpDir string, objs *s3.ListOb
 	downloader := s3manager.NewDownloader(sess)
 	for _, item := range objs.Contents {
 		filename := fmt.Sprintf("%s/%s", tmpDir, filepath.Base(*item.Key))
-		fmt.Println(filename)
 		fp, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0600)
 		if err != nil {
 			fmt.Println(err)
 			return fps
 		}
-		n, err := downloader.Download(fp, &s3.GetObjectInput{
+		_, err = downloader.Download(fp, &s3.GetObjectInput{
 			Bucket: aws.String(src),
 			Key:    aws.String(*item.Key),
 		})
@@ -64,7 +63,6 @@ func GetObject(sess *session.Session, src string, tmpDir string, objs *s3.ListOb
 		if err != nil {
 			return fps
 		}
-		fmt.Println(n)
 	}
 
 	return fps
@@ -111,7 +109,6 @@ func PutObject(sess *session.Session, dst string, files []string) error {
 
 	for _, f := range files {
 		key := makeHIVEFormat(f)
-		fmt.Println(key)
 		file, err := os.Open(f)
 		if err != nil {
 			log.Fatal(err)
