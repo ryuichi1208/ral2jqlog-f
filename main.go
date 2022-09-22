@@ -48,6 +48,8 @@ func init() {
 		const layout2 = "20060101"
 		t := time.Now()
 		DATE = t.Format(layout2)
+	} else {
+		DATE = opts.DATE
 	}
 }
 
@@ -57,6 +59,7 @@ func main() {
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
+	fmt.Println(DATE)
 	resp, err := s3.GetObjectsList(sess, DATE, SRC_BUCKET)
 	if err != nil {
 		os.Exit(1)

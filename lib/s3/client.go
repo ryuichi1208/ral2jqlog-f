@@ -16,7 +16,7 @@ import (
 
 func GetObjectsList(sess *session.Session, date, src string) (*s3.ListObjectsV2Output, error) {
 	svc := s3.New(sess)
-	key := fmt.Sprintf("%s/%s/%s\n", date[0:4], date[4:6], date[6:8])
+	key := fmt.Sprintf("%s/%s/%s", date[0:4], date[4:6], date[6:8])
 
 	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{
 		Bucket: aws.String(src),
