@@ -10,7 +10,7 @@ import (
 
 func GetObjectsList(sess *session.Session, date, src string) (*s3.ListObjectsV2Output, error) {
 	svc := s3.New(sess)
-	key := "2022/09/06/"
+	key := "2022/09/06/23/"
 
 	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{
 		Bucket: aws.String(src),
