@@ -64,14 +64,14 @@ func message2CSV(csvString string, w io.Writer) error {
 	return nil
 }
 
-func auditLog2Json(jsonString string) error {
+func auditLog2Json(jsonString string, w io.Writer) error {
 	var auditlog AuditLog
 	if err := json.Unmarshal([]byte(jsonString), &auditlog); err != nil {
 		fmt.Println(err)
 		return err
 	}
 	for _, v := range auditlog.LogEvents {
-		if err := message2CSV(v.Message, os.Stdout); err != nil {
+		if err := message2CSV(v.Message, w); err != nil {
 			return err
 		}
 	}
@@ -87,10 +87,15 @@ func ReadGzip(fp *os.File) error {
 	}
 	defer r.Close()
 
+	f, err := os.OpenFile(fmt.Sprintf("%s.json", fp.Name()), os.O_CREATE, 0600)
+	if err != nil {
+		return nil
+	}
+
 	for {
 		r.Multistream(false)
 		if data, err := ioutil.ReadAll(r); err == nil {
-			auditLog2Json(string(data))
+			auditLog2Json(string(data), f)
 		}
 
 		if err := r.Reset(br); err != nil {
