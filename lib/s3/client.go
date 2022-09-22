@@ -16,7 +16,7 @@ import (
 
 func GetObjectsList(sess *session.Session, date, src string) (*s3.ListObjectsV2Output, error) {
 	svc := s3.New(sess)
-	key := "2022/09/06/23/"
+	key := fmt.Sprintf("%s/%s/%s\n", date[0:4], date[4:6], date[6:8])
 
 	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{
 		Bucket: aws.String(src),
@@ -120,9 +120,8 @@ func PutObject(sess *session.Session, dst string, files []string) error {
 			Body:   file,
 		})
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
-		log.Println("done")
 	}
 
 	return nil

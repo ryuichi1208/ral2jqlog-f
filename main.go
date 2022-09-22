@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -51,6 +52,7 @@ func init() {
 }
 
 func main() {
+	log.Printf("START")
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
@@ -61,7 +63,10 @@ func main() {
 	}
 
 	tmpDir, err := s3.MkTmpDir("audit_")
-	defer s3.RmTmpDir(tmpDir)
+	defer func() {
+		s3.RmTmpDir(tmpDir)
+		log.Printf("END")
+	}()
 
 	if err != nil {
 		fmt.Println(err)
