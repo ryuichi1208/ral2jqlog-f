@@ -48,12 +48,13 @@ func init() {
 
 	if opts.DATE == "" {
 		const layout2 = "20060101"
-		t := time.Now()
+		diff := 24 * time.Hour
+		t := time.Now().Add(-diff)
 		DATE = t.Format(layout2)
 	} else {
 		DATE = opts.DATE
 
-		if len(DATE) != 8 || len(DATE) != 10 {
+		if len(DATE) != 8 && len(DATE) != 10 {
 			log.Println("[ERROR] invalid date format want(20000101 or 2020010101)")
 			os.Exit(1)
 		}
