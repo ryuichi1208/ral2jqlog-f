@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/jessevdk/go-flags"
 	"github.com/ryuichi1208/ral2jqlog-f/lib/s3"
@@ -70,7 +71,7 @@ func init() {
 	}
 }
 
-func main() {
+func Do() {
 	log.Printf("START")
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
@@ -100,7 +101,6 @@ func main() {
 		log.Println(err)
 		os.Exit(1)
 	}
-
 	fps, err := s3.GetObject(sess, SRC_BUCKET, tmpDir, resp, ctx)
 	if err != nil {
 		log.Println(err)
@@ -115,4 +115,12 @@ func main() {
 	}
 
 	s3.PutObject(sess, DST_BUCKET, s3.GetJsonFileList(tmpDir))
+}
+
+func main() {
+	if os.Getenv("AWS_LAMBDA_RUNTIME_API") != "" {
+		lambda.Start(Do)
+	} else {
+		Do()
+	}
 }

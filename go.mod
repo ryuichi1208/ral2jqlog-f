@@ -3,6 +3,7 @@ module github.com/ryuichi1208/ral2jqlog-f
 go 1.18
 
 require (
+	github.com/aws/aws-lambda-go v1.34.1 // indirect
 	github.com/aws/aws-sdk-go v1.44.103 // indirect
 	github.com/jessevdk/go-flags v1.5.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
