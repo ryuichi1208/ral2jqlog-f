@@ -71,6 +71,26 @@ func init() {
 	}
 }
 
+type Request struct {
+	ID    int    `json:"ID"`
+	Value string `json:"Value"`
+}
+
+// Response represents the Response object
+type Response struct {
+	Message string `json:"Message"`
+	Ok      bool   `json:"Ok"`
+}
+
+// Handler represents the Handler of lambda
+func Handler(request Request) (Response, error) {
+	Do()
+	return Response{
+		Message: fmt.Sprint("Process Request Id"),
+		Ok:      true,
+	}, nil
+}
+
 func Do() {
 	log.Printf("START")
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
@@ -79,7 +99,7 @@ func Do() {
 
 	ctx := context.Background()
 	var cancelFn func()
-	ctx, cancelFn = context.WithTimeout(ctx, 60*time.Second)
+	ctx, cancelFn = context.WithTimeout(ctx, 120*time.Second)
 
 	if cancelFn != nil {
 		defer cancelFn()
@@ -119,7 +139,7 @@ func Do() {
 
 func main() {
 	if os.Getenv("AWS_LAMBDA_RUNTIME_API") != "" {
-		lambda.Start(Do)
+		lambda.Start(Handler)
 	} else {
 		Do()
 	}
