@@ -17,7 +17,13 @@ import (
 
 func GetObjectsList(sess *session.Session, date, src string) (*s3.ListObjectsV2Output, error) {
 	svc := s3.New(sess)
-	key := fmt.Sprintf("%s/%s/%s", date[0:4], date[4:6], date[6:8])
+	var key string
+
+	if len(date) == 8 {
+		key = fmt.Sprintf("%s/%s/%s", date[0:4], date[4:6], date[6:8])
+	} else if len(date) == 10 {
+		key = fmt.Sprintf("%s/%s/%s%s", date[0:4], date[4:6], date[6:8], date[8:10])
+	}
 
 	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{
 		Bucket: aws.String(src),
@@ -46,7 +52,7 @@ func RmTmpDir(dir string) error {
 	return nil
 }
 
-func GetObject(sess *session.Session, src string, tmpDir string, objs *s3.ListObjectsV2Output, ctx context.Context) []*os.File {
+func GetObject(sess *session.Session, src string, tmpDir string, objs *s3.ListObjectsV2Output, ctx context.Context) ([]*os.File, error) {
 	var fps []*os.File
 	downloader := s3manager.NewDownloader(sess)
 	for _, item := range objs.Contents {
@@ -54,19 +60,19 @@ func GetObject(sess *session.Session, src string, tmpDir string, objs *s3.ListOb
 		fp, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0600)
 		if err != nil {
 			fmt.Println(err)
-			return fps
+			return fps, nil
 		}
 		_, err = downloader.DownloadWithContext(ctx, fp, &s3.GetObjectInput{
 			Bucket: aws.String(src),
 			Key:    aws.String(*item.Key),
 		})
-		fps = append(fps, fp)
 		if err != nil {
-			return fps
+			return fps, err
 		}
+		fps = append(fps, fp)
 	}
 
-	return fps
+	return fps, nil
 }
 
 func GetJsonFileList(dir string) []string {
@@ -123,6 +129,7 @@ func PutObject(sess *session.Session, dst string, files []string) error {
 		if err != nil {
 			return err
 		}
+		log.Printf("[INFO] done %s", file.Name())
 	}
 
 	return nil

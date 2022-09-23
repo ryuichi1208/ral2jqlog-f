@@ -15,6 +15,7 @@ import (
 type options struct {
 	DST_BUCKET string `short:"d" long:"dst-bucket" description:"audit log file" required:"false"`
 	SRC_BUCKET string `short:"s" long:"src-bucket" description:"File Content Type" required:"false"`
+	REGION     string `short:"r" long:"region" description:"AWS Region"`
 	DATE       string `long:"date" description:"date"`
 }
 
@@ -41,7 +42,7 @@ func init() {
 	}
 
 	if DST_BUCKET == "" || SRC_BUCKET == "" {
-		fmt.Println("null")
+		log.Println("[ERROR] SRC_BUCKET and DST_BUCKET is null")
 		os.Exit(1)
 	}
 
@@ -51,10 +52,19 @@ func init() {
 		DATE = t.Format(layout2)
 	} else {
 		DATE = opts.DATE
+
+		if len(DATE) != 8 || len(DATE) != 10 {
+			log.Println("[ERROR] invalid date format want(20000101 or 2020010101)")
+			os.Exit(1)
+		}
+	}
+
+	if opts.REGION != "" {
+		os.Setenv("AWS_REGION", opts.REGION)
 	}
 
 	if os.Getenv("AWS_REGION") == "" {
-		fmt.Println("SET the environment variable AWS_REGION")
+		fmt.Println("[ERROR] SET the environment variable AWS_REGION")
 		os.Exit(1)
 	}
 }
@@ -73,9 +83,9 @@ func main() {
 		defer cancelFn()
 	}
 
-	fmt.Println(DATE)
 	resp, err := s3.GetObjectsList(sess, DATE, SRC_BUCKET)
 	if err != nil {
+		log.Println(err)
 		os.Exit(1)
 	}
 
@@ -86,11 +96,19 @@ func main() {
 	}()
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 
-	fps := s3.GetObject(sess, SRC_BUCKET, tmpDir, resp, ctx)
+	fps, err := s3.GetObject(sess, SRC_BUCKET, tmpDir, resp, ctx)
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	} else if len(fps) == 0 {
+		log.Println("file is nil")
+		os.Exit(1)
+	}
+
 	for _, fp := range fps {
 		s3.ReadGzip(fp)
 	}
