@@ -47,7 +47,7 @@ func init() {
 	}
 
 	if opts.DATE == "" {
-		const layout2 = "20060101"
+		const layout2 = "20060102"
 		diff := 24 * time.Hour
 		t := time.Now().Add(-diff)
 		DATE = t.Format(layout2)
