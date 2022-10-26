@@ -21,15 +21,8 @@ Application Options:
 
 Help Options:
   -h, --help        Show this help message
+```
 
-Usage:
-  ral2jqlog-f [OPTIONS]
-
-Application Options:
-  -d, --dst-bucket= audit log file
-  -s, --src-bucket= File Content Type
-      --date=       date
-
-Help Options:
-  -h, --help        Show this help message
+```
+$ ral2jqlog-f --src-bucket rds-audit --dst-bucket rds-querylog-hive-itg --date yyyymmdd
 ```
