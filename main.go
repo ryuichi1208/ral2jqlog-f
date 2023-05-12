@@ -18,9 +18,10 @@ type options struct {
 	SRC_BUCKET string `short:"s" long:"src-bucket" description:"File Content Type" required:"false"`
 	REGION     string `short:"r" long:"region" description:"AWS Region"`
 	DATE       string `long:"date" description:"date"`
+	HOST       string `long:"host" description:"host"`
 }
 
-var DST_BUCKET, SRC_BUCKET, DATE string
+var DST_BUCKET, SRC_BUCKET, DATE, HOST string
 
 func init() {
 	var opts options
@@ -69,6 +70,8 @@ func init() {
 		fmt.Println("[ERROR] SET the environment variable AWS_REGION")
 		os.Exit(1)
 	}
+
+	HOST = opts.HOST
 }
 
 type Request struct {
@@ -99,19 +102,21 @@ func Do() {
 
 	ctx := context.Background()
 	var cancelFn func()
-	ctx, cancelFn = context.WithTimeout(ctx, 120*time.Second)
+	ctx, cancelFn = context.WithTimeout(ctx, 3600*time.Second)
 
 	if cancelFn != nil {
 		defer cancelFn()
 	}
 
 	resp, err := s3.GetObjectsList(sess, DATE, SRC_BUCKET)
+	fmt.Println(resp)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
 
 	tmpDir, err := s3.MkTmpDir("audit_")
+	fmt.Println("[INFO] tmpdir: ", tmpDir)
 	defer func() {
 		s3.RmTmpDir(tmpDir)
 		log.Printf("END")
@@ -121,7 +126,7 @@ func Do() {
 		log.Println(err)
 		os.Exit(1)
 	}
-	fps, err := s3.GetObject(sess, SRC_BUCKET, tmpDir, resp, ctx)
+	fps, err := s3.GetObject(sess, SRC_BUCKET, tmpDir, resp, ctx, HOST)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
