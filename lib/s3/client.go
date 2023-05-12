@@ -22,7 +22,7 @@ func GetObjectsList(sess *session.Session, date, src string) (*s3.ListObjectsV2O
 	if len(date) == 8 {
 		key = fmt.Sprintf("%s/%s/%s", date[0:4], date[4:6], date[6:8])
 	} else if len(date) == 10 {
-		key = fmt.Sprintf("%s/%s/%s%s", date[0:4], date[4:6], date[6:8], date[8:10])
+		key = fmt.Sprintf("%s/%s/%s/%s", date[0:4], date[4:6], date[6:8], date[8:10])
 	}
 
 	resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{
@@ -52,11 +52,16 @@ func RmTmpDir(dir string) error {
 	return nil
 }
 
-func GetObject(sess *session.Session, src string, tmpDir string, objs *s3.ListObjectsV2Output, ctx context.Context) ([]*os.File, error) {
+func GetObject(sess *session.Session, src string, tmpDir string, objs *s3.ListObjectsV2Output, ctx context.Context, host string) ([]*os.File, error) {
 	var fps []*os.File
 	downloader := s3manager.NewDownloader(sess)
 	for _, item := range objs.Contents {
 		filename := fmt.Sprintf("%s/%s", tmpDir, filepath.Base(*item.Key))
+		if !strings.Contains(filename, host) {
+			continue
+		}
+
+		fmt.Println("[INFO] Download File: ", filename)
 		fp, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0600)
 		if err != nil {
 			fmt.Println(err)
